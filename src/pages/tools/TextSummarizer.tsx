@@ -218,7 +218,7 @@ export function TextSummarizer() {
               color: '#fff', border: 'none', borderRadius: 10, 
               fontSize: 14, fontWeight: 900, cursor: loading ? 'not-allowed' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-              boxShadow: '0 8px 24px rgba(79,107,237,0.25)', opacity: loading ? 0.8 : 1
+              opacity: loading ? 0.8 : 1
             }}
           >
             {loading ? <RefreshCw size={18} className="animate-spin" /> : <Sparkles size={18} fill="currentColor" />}

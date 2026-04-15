@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useSidebar } from '../../../hooks/useSidebar';
 import { NAV_SECTIONS, SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from '../../../constants/navigation';
 import { SidebarHeader } from './SidebarHeader';
@@ -17,23 +17,6 @@ export function Sidebar() {
   } = useSidebar();
 
   const [searchQuery, setSearchQuery] = useState('');
-
-  const filteredSections = useMemo(() => {
-    if (!searchQuery.trim()) return NAV_SECTIONS;
-
-    const query = searchQuery.toLowerCase();
-    return NAV_SECTIONS.map(section => {
-      const filteredItems = section.items.filter(item => 
-        item.label.toLowerCase().includes(query) || 
-        item.id.toLowerCase().includes(query)
-      );
-
-      if (filteredItems.length > 0) {
-        return { ...section, items: filteredItems };
-      }
-      return null;
-    }).filter(Boolean) as typeof NAV_SECTIONS;
-  }, [searchQuery]);
 
   return (
     <aside
@@ -69,8 +52,8 @@ export function Sidebar() {
         aria-label="Main navigation"
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {filteredSections.length > 0 ? (
-            filteredSections.map(section => (
+          {NAV_SECTIONS.length > 0 ? (
+            NAV_SECTIONS.map(section => (
               <SidebarSection
                 key={section.id}
                 section={section}

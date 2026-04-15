@@ -3,6 +3,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { Sidebar } from './components/layout/Sidebar';
 import { Navbar } from './components/layout/Navbar';
 import { AppRoutes } from './routes';
+import { WorkspaceProvider } from './context/WorkspaceContext';
+import { SecurityIndicator } from './components/layout/SecurityIndicator';
 
 function App() {
   const [dark, setDark] = useState<boolean>(() => {
@@ -18,15 +20,18 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: 'var(--bg-base)' }}>
-        <Sidebar />
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, overflow: 'hidden' }}>
-          <Navbar dark={dark} onToggleDark={() => setDark(d => !d)} />
-          <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-            <AppRoutes />
-          </main>
+      <WorkspaceProvider>
+        <SecurityIndicator />
+        <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: 'var(--bg-base)' }}>
+          <Sidebar />
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, overflow: 'hidden' }}>
+            <Navbar dark={dark} onToggleDark={() => setDark(d => !d)} />
+            <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+              <AppRoutes />
+            </main>
+          </div>
         </div>
-      </div>
+      </WorkspaceProvider>
     </BrowserRouter>
   );
 }

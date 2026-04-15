@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { NAV_SECTIONS } from '../constants/navigation';
 import { DynamicIcon } from '../components/ui/DynamicIcon';
+import { useWorkspace } from '../context/WorkspaceContext';
+import { Pin } from 'lucide-react';
 
 /* ─── Modern Home Dashboard ─── */
 
@@ -18,6 +20,12 @@ export function HomePage() {
       section.items.map(item => ({ ...item, category: section.title }))
     );
   }, []);
+
+  const { pinnedTools, togglePin, isPinned } = useWorkspace();
+
+  const pinnedList = useMemo(() => 
+    pinnedTools.map(path => allTools.find(t => t.path === path)).filter(Boolean),
+  [pinnedTools, allTools]);
 
   const filteredTools = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -52,8 +60,7 @@ export function HomePage() {
         <div style={{ position: 'relative', width: '100%', maxWidth: 500 }}>
            <div style={{ 
              display: 'flex', alignItems: 'center', gap: 12, background: 'var(--bg-surface)', 
-             border: '2px solid var(--brand)', borderRadius: 12, padding: '14px 20px',
-             boxShadow: '0 8px 30px rgba(79,107,237,0.15)'
+             border: '2px solid var(--brand)', borderRadius: 12, padding: '14px 20px'
            }}>
               <Search size={20} style={{ color: 'var(--brand)' }} />
               <input 
@@ -76,7 +83,7 @@ export function HomePage() {
              <div style={{ 
                position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 8, 
                background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 12, 
-               boxShadow: 'var(--shadow-lg)', zIndex: 100, overflow: 'hidden'
+               zIndex: 100, overflow: 'hidden'
              }}>
                 {filteredTools.map(tool => (
                   <Link 
@@ -106,6 +113,34 @@ export function HomePage() {
 
       {/* ── Main Dashboard Grid ── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 48 }}>
+        
+        {/* Surgical Workspace (Pinned) */}
+        {pinnedList.length > 0 && (
+          <div style={{
+            padding: '24px',
+            background: 'rgba(79, 107, 237, 0.05)',
+            backdropFilter: 'blur(20px)',
+            border: '2px solid rgba(79, 107, 237, 0.15)',
+            borderRadius: 20
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 32, height: 32, background: 'var(--brand)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                     <Pin size={16} fill="currentColor" />
+                  </div>
+                  <h2 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Surgical Workspace</h2>
+               </div>
+               <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--brand)', background: 'rgba(79,107,237,0.1)', padding: '4px 10px', borderRadius: 6 }}>{pinnedList.length} PINNED TOOLS</span>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+               {pinnedList.map(tool => (
+                  <ToolCard key={tool.id} tool={tool} isPinned={true} onPinToggle={() => togglePin(tool.path)} />
+               ))}
+            </div>
+          </div>
+        )}
+
         {NAV_SECTIONS.filter(s => s.id !== 'main').map(section => (
           <div key={section.id}>
              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
@@ -148,45 +183,71 @@ function StatBox({ icon, color, label, value }: any) {
   );
 }
 
-function ToolCard({ tool }: any) {
+function ToolCard({ tool, isPinned: forcePinned, onPinToggle: forceToggle }: any) {
+  const { isPinned, togglePin } = useWorkspace();
+  const pinned = forcePinned ?? isPinned(tool.path);
+
   return (
-    <Link to={tool.path} style={{ textDecoration: 'none' }}>
-      <div 
+    <div style={{ position: 'relative' }}>
+      <Link to={tool.path} style={{ textDecoration: 'none' }}>
+        <div 
+          style={{ 
+            padding: '24px', background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 12,
+            transition: 'all 200ms ease', position: 'relative', overflow: 'hidden'
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = 'var(--brand)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = 'var(--border)';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+             <div style={{ width: 40, height: 40, background: 'var(--bg-base)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                <DynamicIcon name={tool.icon} size={20} />
+             </div>
+             {tool.badge && (
+               <span style={{ 
+                 fontSize: 9, fontWeight: 900, background: tool.badge.variant === 'new' ? 'var(--brand)' : 'var(--bg-base)', 
+                 color: tool.badge.variant === 'new' ? '#fff' : 'var(--text-muted)',
+                 padding: '2px 6px', borderRadius: 4
+               }}>{tool.badge.label}</span>
+             )}
+          </div>
+          <div>
+             <h3 style={{ margin: '0 0 4px', fontSize: 14, fontWeight: 800, color: 'var(--text-primary)' }}>{tool.label}</h3>
+             <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.4 }}>
+                Execute {tool.label} procedures with surgical reliability.
+             </p>
+          </div>
+          <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 4, color: 'var(--brand)', fontSize: 11, fontWeight: 800 }}>
+             OPEN MODULE <ChevronRight size={12} />
+          </div>
+        </div>
+      </Link>
+      
+      <button 
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          (forceToggle || togglePin)(tool.path);
+        }}
         style={{ 
-          padding: '24px', background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 12,
-          transition: 'all 200ms ease', position: 'relative', overflow: 'hidden'
+          position: 'absolute', top: 12, right: 12, 
+          width: 28, height: 28, borderRadius: 6,
+          background: pinned ? 'var(--brand)' : 'var(--bg-base)',
+          color: pinned ? '#fff' : 'var(--text-muted)',
+          border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'all 200ms',
+          zIndex: 10
         }}
-        onMouseEnter={e => {
-          e.currentTarget.style.borderColor = 'var(--brand)';
-          e.currentTarget.style.transform = 'translateY(-2px)';
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.borderColor = 'var(--border)';
-          e.currentTarget.style.transform = 'translateY(0)';
-        }}
+        title={pinned ? 'Unpin tool' : 'Pin to Workspace'}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-           <div style={{ width: 40, height: 40, background: 'var(--bg-base)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
-              <DynamicIcon name={tool.icon} size={20} />
-           </div>
-           {tool.badge && (
-             <span style={{ 
-               fontSize: 9, fontWeight: 900, background: tool.badge.variant === 'new' ? 'var(--brand)' : 'var(--bg-base)', 
-               color: tool.badge.variant === 'new' ? '#fff' : 'var(--text-muted)',
-               padding: '2px 6px', borderRadius: 4
-             }}>{tool.badge.label}</span>
-           )}
-        </div>
-        <div>
-           <h3 style={{ margin: '0 0 4px', fontSize: 14, fontWeight: 800, color: 'var(--text-primary)' }}>{tool.label}</h3>
-           <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.4 }}>
-              Execute {tool.label} procedures with surgical reliability.
-           </p>
-        </div>
-        <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 4, color: 'var(--brand)', fontSize: 11, fontWeight: 800 }}>
-           OPEN MODULE <ChevronRight size={12} />
-        </div>
-      </div>
-    </Link>
+        <Pin size={14} fill={pinned ? 'currentColor' : 'none'} />
+      </button>
+    </div>
   );
 }

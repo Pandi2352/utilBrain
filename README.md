@@ -5,8 +5,10 @@
 ---
 
 ## 🚀 Key Features
-- **Surgical UI:** Sharp edges, high-contrast typography, and zero-shadow design.
-- **Global Search:** Instant access to 50+ tools via `⌘K` or the surgical navbar.
+- **Surgical UI:** Sharp edges, high-contrast typography, and a strictly shadow-less flat aesthetic.
+- **Global Search:** Instant access to 50+ tools via `⌘K` or the surgical search bar.
+- **Surgical Workspace:** Personalized "Personal Dashboard" grid on the Home page for pinning high-priority tools.
+- **Neural Silence:** Real-time security auditor showing local vs. neural (AI) execution with a pulsing tactical border.
 - **Privacy First:** All calculations and data processing happen entirely in your browser. No backend, no trackers.
 - **AI-Powered:** Direct integration with Google Gemini for vision and text intelligence (bring your own API key).
 
@@ -123,6 +125,17 @@
    ```bash
    npm run build
    ```
+
+---
+
+## 🛠️ System Architecture (Latest Updates)
+### 🗄️ Workspace Management
+- **Persistence:** Global state handled via `WorkspaceProvider` and `localStorage`.
+- **Dynamic Grid:** High-fidelity glassmorphism grid on the Home page specifically for pinned assets.
+
+### 🏁 Security Audit (Neural Silence)
+- **Visual Verification:** 1px pulsing border around the viewport indicates current security protocol.
+- **Status Labelling:** Context-aware labels (`SECURE: LOCAL` vs `NEURAL: TUNNEL`) for real-time privacy transparency.
 
 ---
 
